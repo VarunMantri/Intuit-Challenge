@@ -1,66 +1,37 @@
-__author__="Varun Rajiv Mantri"
+
+"""
+file: featureExtracter.py
+language: python3
+author: Varun Rajiv Mantri
+description: code to extract distinct features from Mint data present in a CSV file
+OutPut: maxStorage.csv, intermediateSolution.csv
+"""
+
+
 import csv
 import os
 
 def csvReader(fileName):
+    '''
+        csvReader reads a CSV file
+            :param fileName: Complete path of subject file
+            :return: list: list containing object of file and a handle to it (for closing)
+    '''
     startingLineFlag = 0
-    file = open(fileName)
-    fileread = csv.reader(file)
+    try:
+        file = open(fileName)
+        fileread = csv.reader(file)
+    except IOError:
+        print('Invalid address. Re-run the code with correct file address')
+        return [-1, -1]
     print(fileName)
     return [fileread,file]
 
-def hashStringer(key):
-    alternater = 1
-    result = ''
-    if len(key) != 1:
-        for item in key:
-            if alternater == 1:
-                val = str((ord(item) - 22) * 9)
-                result = result + val[len(val) - 2]
-                alternater = -1
-            else:
-                val = str((ord(item) - 22) * 9)
-                result = result + val[1]
-                alternater = 1
-    else:
-        result = ord(key)
-    result = str(result * 31)
-    sum = 0
-    for item in result:
-        sum = sum + int(item)
-    if sum % 2 == 0:
-        result = int(result) >> 1
-        result = str(result - 1)
-    else:
-        result = str(int(result) >> 2)
-    return int(result)
-
-'''
-def totalIncome(fileName):
-    listFile=csvReader(fileName)
-    file=listFile[0]
-    startingLineFlag = 0
-    totalSpending=0
-    totalPayment=0
-    for row in file:
-        if startingLineFlag == 0:
-            startingLineFlag = 1
-        else:
-            tempVal=float(row[3])
-            if tempVal<0:
-                totalSpending=totalSpending+tempVal
-            else :
-                totalPayment=totalPayment+tempVal
-    #closing the openned resource
-    file=listFile[1]
-    file.close()
-    #-----------------------
-    totalPayment=(totalPayment)/2
-    temp=0.24*totalPayment
-    totalIn=totalPayment+temp
-    return (totalIn)
-'''
 def initializationCode():
+    '''
+        code that initializes lists with keywords and features
+            :return: list: list contains two lists, one that contains the names of the actual features and one that contains keywords/phrases
+    '''
     keyWordList = table = [None for _ in range(1000)]
     featureList = ['User ID','Financial Capacity', 'Food', 'Transportation', 'Drinking', 'Recreation', 'House?','parent?', 'student?', 'car?','pet?','Divorced?','Expenditure post paycheck','Financial stability']
     tempList = [['Public Transportation', 3], ['Restaurant', 2], ['Taxi', 3], ['Uber', 3], ['Bar', 4],['Foods',2],
@@ -69,8 +40,6 @@ def initializationCode():
     for item in tempList:
         index = hash(item[0]) % 1000
         collision=0
-        '''while keyWordList[index] != None:
-            index = index + 1'''
         if keyWordList[index]!=None:
             collision=collision+1
         plist.append(index)
@@ -79,6 +48,12 @@ def initializationCode():
     return  [keyWordList,featureList]
 
 def featureExtracter(fileName):
+    '''
+        featureExtracter extracts the actual features from input file
+            :param fileName: subject file
+            :return:  List containing list that contains the labels for extracted features and list that corresponds one to
+            one with the earlier list
+    '''
     List=initializationCode()
     keyWordList=List[0]
     featureList=List[1]
@@ -113,12 +88,6 @@ def featureExtracter(fileName):
             tempVal=float(row[3])
             if tempVal<0 and flag==1:
                 totalSpending=totalSpending+tempVal
-
-
-    '''
-        if annual income is 0 then the person is jobless and the figures are computed by considering income to be 1
-        thus the featureData is not altered
-    '''
     featureData=inferenceBuilder(featureData,income)
     #annualIncome=totalIncome(fileName)
     if paycheckCounter==0:
@@ -131,20 +100,26 @@ def featureExtracter(fileName):
         featureData[12]=(-1*totalSpending)
     featureData[0]=uId
     fileRead[1].close()
-
     #testing
     print(featureList)
     print(featureData)
     return [featureList,featureData]
 
 
-def inferenceBuilder(featureData,annualIncome):
+def inferenceBuilder(featureData,totalincome):
+    '''
+            inferencebuilder builds first order inference where if a value is greater than certain value, it's written as 'YES' else 'NO'
+            (applicable to only certain features)
+                :param featureData: list that corresponds to the list of features
+                :param totalincome: total earnings
+                :return: featureData: list that corresponds to the list of features
+    '''
     # converting to percentage and building inference
     referenceList = [2, 3, 4, 5, 10]
-    if annualIncome != 0:
+    if totalincome != 0:
         for item in referenceList:
             temp = float(featureData[item])
-            featureData[item] = ((temp / annualIncome) * 100)
+            featureData[item] = ((temp / totalincome) * 100)
     referenceList = [6, 7, 8, 10, 11]
     for item in referenceList:
         if featureData[item] > 0 and item != 6:
@@ -161,6 +136,13 @@ def inferenceBuilder(featureData,annualIncome):
     return featureData
 
 def fileWriter(file,featureList,featureData):
+    '''
+            writes to a file
+                :param file: name of the file to which data is to be written
+                :param featureList: list that contains the labels for extracted features
+                :param featureData:  list that corresponds to the list of features (i.e. featureList)
+                :return: featureData: list that corresponds to the list of features
+    '''
     if featureList!=-1:
         for item in featureList:
             file.write(str(item)+',')
@@ -170,10 +152,25 @@ def fileWriter(file,featureList,featureData):
     file.write('\n')
 
 def maxValuesWriter(file,maxCapacity,maxStability,maxFoody,maxDrinking,maxRecreation):
+    '''
+            writes to a file
+                :param file: name of the file to which data is to be written
+                :param maxCapacity: one of the feature
+                :param maxStability: one of the feature
+                :param maxFoody: one of the feature
+                :param:maxDrinking: one of the feature
+                :param:maxRecreation: one of the feature
+    '''
     file.write('MaxCapacity,MaxStability,maxFoodyness,maxDrinking,maxRecreation\n')
     file.write(str(maxCapacity)+','+str(maxStability)+','+str(maxFoody)+','+str(maxDrinking)+','+str(maxRecreation)+'\n')
 
 def helperExtracter(wordList,keyWordList):
+    '''
+            helper function for featureExtracter
+                :param wordList: list of words generated from the phrase extracted from input CSV file
+                :param keyWordList:list of keywords stored as default list for this program
+                :return:List of boolean value
+    '''
     length=len(wordList)-1
     counter=0
     currentItem=''
@@ -202,69 +199,70 @@ def helperExtracter(wordList,keyWordList):
         counter=baseCounter
     return [False,None]
 
-'''
-def inferenceEngine(fileName):
-    fileRead=csvReader(fileName)
-    fileHandle=fileRead[0]
-    startingFlag=0
-    modifiedFeatureData=[None for _ in range(14)]
-    referenceList=[2,3,4,5,10]
-    for row in fileHandle:
-        if startingFlag==0:
-            startingFlag=1
-        else:
-            print(row[1])
-            baseIncome=float(row[1])
-            for item in referenceList:
-                temp=float(row[item])
-                modifiedFeatureData[item]=((temp/baseIncome)*100)
-    fileRead[1].close()
-    return modifiedFeatureData
-'''
-
-def main():
-    filePath="D:\\intuit_challange\\rit-challenge\\transaction-data\\inferenceData"
-    completeName = os.path.join(filePath,'intermediateOutPut.csv')
-    outputFile = open(completeName, 'w+')
-    startingFlag=0
+def start(filePath,directoryPath):
+    '''
+            wstart function for featureExtracter.py
+                :param filePath: path where the target files will be generated
+                :param directoryPath: path of directory from where user data is to be read
+    '''
+    completeName = os.path.join(filePath, 'intermediateOutPut.csv')
+    try:
+        outputFile = open(completeName, 'w+')
+    except IOError:
+        print('Invalid path!')
+        return -1
+    startingFlag = 0
     # Storing the maximum values in file
     maxCapacity = 0
-    maxStability=0
-    maxFoody=0
-    maxDrinking=0
-    maxRecreation=0
-    for file in os.listdir('D:\\intuit_challange\\rit-challenge\\transaction-data'):
+    maxStability = 0
+    maxFoody = 0
+    maxDrinking = 0
+    maxRecreation = 0
+    for file in os.listdir(directoryPath):
         if file.endswith('.csv'):
             print(file)
-            finalList=featureExtracter(file)
-            if startingFlag==0:
-                fileWriter(outputFile,finalList[0],finalList[1])
-                tempList=finalList[1]
-                maxCapacity=float(tempList[1])
-                maxStability=float(tempList[13])
-                maxFoody=float(tempList[2])
-                maxDrinking=float(tempList[4])
-                maxRecreation=float(tempList[5])
-                startingFlag=1
+            finalList = featureExtracter(file)
+            if startingFlag == 0:
+                fileWriter(outputFile, finalList[0], finalList[1])
+                tempList = finalList[1]
+                maxCapacity = float(tempList[1])
+                maxStability = float(tempList[13])
+                maxFoody = float(tempList[2])
+                maxDrinking = float(tempList[4])
+                maxRecreation = float(tempList[5])
+                startingFlag = 1
             else:
                 tempList = finalList[1]
-                if maxCapacity <float(tempList[1]):
-                    maxCapacity=float(tempList[1])
+                if maxCapacity < float(tempList[1]):
+                    maxCapacity = float(tempList[1])
                 if maxStability < float(tempList[13]):
-                    maxStability=float(tempList[13])
+                    maxStability = float(tempList[13])
                 if maxFoody < float(tempList[2]):
-                    maxFoody=float(tempList[2])
+                    maxFoody = float(tempList[2])
                 if maxDrinking < float(tempList[4]):
-                    maxDrinking=float(tempList[4])
+                    maxDrinking = float(tempList[4])
                 if maxRecreation < float(tempList[5]):
-                    maxRecreation=float(tempList[5])
-                fileWriter(outputFile,-1,finalList[1])
+                    maxRecreation = float(tempList[5])
+                fileWriter(outputFile, -1, finalList[1])
             print('---------------------------')
     outputFile.close()
-    #writing the final max values to file
-    completeName = os.path.join(filePath,'maxStorage.csv')
+    # writing the final max values to file
+    completeName = os.path.join(filePath, 'maxStorage.csv')
     outputFile = open(completeName, 'w+')
-    maxValuesWriter(outputFile,maxCapacity,maxStability,maxFoody,maxDrinking,maxRecreation)
+    maxValuesWriter(outputFile, maxCapacity, maxStability, maxFoody, maxDrinking, maxRecreation)
     outputFile.close()
-    print('Opened resources have been closed.....')
-main()
+    return 1
+
+def main():
+    filePath=input('Enter directory path where you want output to be generated: ')
+    directoryPath=input('Enter path of directory where data-set resides')
+    #filePath="D:\\intuit_challange\\rit-challenge\\transaction-data\\inferenceData"
+    val=start(filePath,directoryPath)
+    if val!=-1:
+        print('Opened resources have been closed.....')
+        print('EXECUTION COMPLETED')
+    elif val==-1:
+        print('EXECUTION ABORTED')
+
+if __name__=="__main__":
+    main()
