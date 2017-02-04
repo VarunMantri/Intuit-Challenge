@@ -24,7 +24,7 @@ def csvReader(fileName):
     except IOError:
         print('Invalid address. Re-run the code with correct file address')
         return [-1, -1]
-    print(fileName)
+    #print(fileName)
     return [fileread,file]
 
 def initializationCode():
@@ -44,7 +44,7 @@ def initializationCode():
             collision=collision+1
         plist.append(index)
         keyWordList[index] = item
-    print(collision)
+    #print(collision)
     return  [keyWordList,featureList]
 
 def featureExtracter(fileName):
@@ -100,9 +100,6 @@ def featureExtracter(fileName):
         featureData[12]=(-1*totalSpending)
     featureData[0]=uId
     fileRead[1].close()
-    #testing
-    print(featureList)
-    print(featureData)
     return [featureList,featureData]
 
 
@@ -218,33 +215,36 @@ def start(filePath,directoryPath):
     maxFoody = 0
     maxDrinking = 0
     maxRecreation = 0
-    for file in os.listdir(directoryPath):
-        if file.endswith('.csv'):
-            print(file)
-            finalList = featureExtracter(file)
-            if startingFlag == 0:
-                fileWriter(outputFile, finalList[0], finalList[1])
-                tempList = finalList[1]
-                maxCapacity = float(tempList[1])
-                maxStability = float(tempList[13])
-                maxFoody = float(tempList[2])
-                maxDrinking = float(tempList[4])
-                maxRecreation = float(tempList[5])
-                startingFlag = 1
-            else:
-                tempList = finalList[1]
-                if maxCapacity < float(tempList[1]):
+    try :
+        for file in os.listdir(directoryPath):
+            if file.endswith('.csv'):
+                #print(file)
+                finalList = featureExtracter(file)
+                if startingFlag == 0:
+                    fileWriter(outputFile, finalList[0], finalList[1])
+                    tempList = finalList[1]
                     maxCapacity = float(tempList[1])
-                if maxStability < float(tempList[13]):
                     maxStability = float(tempList[13])
-                if maxFoody < float(tempList[2]):
                     maxFoody = float(tempList[2])
-                if maxDrinking < float(tempList[4]):
                     maxDrinking = float(tempList[4])
-                if maxRecreation < float(tempList[5]):
                     maxRecreation = float(tempList[5])
-                fileWriter(outputFile, -1, finalList[1])
-            print('---------------------------')
+                    startingFlag = 1
+                else:
+                    tempList = finalList[1]
+                    if maxCapacity < float(tempList[1]):
+                        maxCapacity = float(tempList[1])
+                    if maxStability < float(tempList[13]):
+                        maxStability = float(tempList[13])
+                    if maxFoody < float(tempList[2]):
+                        maxFoody = float(tempList[2])
+                    if maxDrinking < float(tempList[4]):
+                        maxDrinking = float(tempList[4])
+                    if maxRecreation < float(tempList[5]):
+                        maxRecreation = float(tempList[5])
+                    fileWriter(outputFile, -1, finalList[1])
+    except IOError:
+        print('Invalid directory path.....')
+        return -1
     outputFile.close()
     # writing the final max values to file
     completeName = os.path.join(filePath, 'maxStorage.csv')
@@ -257,12 +257,16 @@ def main():
     filePath=input('Enter directory path where you want output to be generated: ')
     directoryPath=input('Enter path of directory where data-set resides')
     #filePath="D:\\intuit_challange\\rit-challenge\\transaction-data\\inferenceData"
+    print('working.....\n')
     val=start(filePath,directoryPath)
     if val!=-1:
-        print('Opened resources have been closed.....')
-        print('EXECUTION COMPLETED')
+        print('Opened resources have been closed.....\n')
+        print('Execution completed.....\n')
+        print('Have a look at intermediateOutPut.csv stored at '+ filePath)
     elif val==-1:
-        print('EXECUTION ABORTED')
+        print('Execution aborted.....\n')
+        print('Try running the program again with correct path..... ')
+
 
 if __name__=="__main__":
     main()

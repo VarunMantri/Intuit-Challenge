@@ -22,9 +22,9 @@ def csvReader(fileName):
         file = open(fileName)
         fileread = csv.reader(file)
     except IOError:
-        print('Invalid address. Re-run the code with correct file address')
+        print('Invalid address. Re-run the code with correct file address\n')
         return [-1,-1]
-    print(fileName)
+    #print(fileName)
     return [fileread,file]
 
 def inferenceBuilder(fileName1,fileName2):
@@ -36,7 +36,7 @@ def inferenceBuilder(fileName1,fileName2):
     '''
     retrivedList=csvReader(fileName1)
     dict = {}
-    if retrivedList[0]==-1 and retrivedList[0]==-1:
+    if retrivedList[0]==-1 and retrivedList[1]==-1:
         dict['error']=-1
         return dict
     startingFlag=0
@@ -204,16 +204,16 @@ def start(filePath):
     file1 = os.path.join(filePath, 'maxStorage.csv')
     file2 = os.path.join(filePath, 'intermediateOutPut.csv')
     dict = inferenceBuilder(file1, file2)
-    if 'error' in dict.keys()==-1:
+    if 'error' in dict.keys():
         return -1
     retList = standardDeviationCal(dict)
     std = retList[0]
     mn = retList[1]
     temp = matchFinder(dict, std, mn)
     outputDict = temp[0]
-    print(outputDict)
+    #print(outputDict)
     csvWriter(outputDict,filePath)
-    decision=input('Would you like to see histogram showing distribution of users scores? \nEnter y to do so. Else enter any other letter to continue. \n(note - after viewing histogram, please close its window to proceed to next part of code.)')
+    decision=input('Would you like to see histogram showing distribution of users scores? \nenter y to do so..... else enter any other letter to continue. \n(note - after viewing histogram, please close its window to proceed to next part of code.)')
     if decision=='y':
         graphPlotter(dict)
     while True:
@@ -228,7 +228,7 @@ def start(filePath):
             print('Invalid User-ID ')
         if flag==1:
             print('Score : '+str(1-(abs(val1-val2)/100)))
-        code=input('Enter q to exit any other letter to proceed)')
+        code=input('Enter q to exit or enter any other letter to proceed\n')
         if code=='q':
             break
     return 1
@@ -238,9 +238,10 @@ def main():
     #filePath = "D:\\intuit_challange\\rit-challenge\\transaction-data\\inferenceData"
     val=start(filePath)
     if val==1:
-        print('COMPLETED EXECUTION')
+        print('Execution completed.....\n')
     else:
-        print('EXECUTION ABORTED')
+        print('Execution aborted.....\n')
+
 
 if __name__=='__main__':
     main()
