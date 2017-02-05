@@ -219,7 +219,7 @@ def start(filePath,directoryPath):
         for file in os.listdir(directoryPath):
             if file.endswith('.csv'):
                 #print(file)
-                finalList = featureExtracter(file)
+                finalList = featureExtracter(os.path.join(directoryPath, file))
                 if startingFlag == 0:
                     fileWriter(outputFile, finalList[0], finalList[1])
                     tempList = finalList[1]
